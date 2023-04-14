@@ -3,17 +3,27 @@ package hello.itemservice.web.validation;
 import hello.itemservice.domain.item.Item;
 import hello.itemservice.domain.item.ItemRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/validation/v1/items")
 @RequiredArgsConstructor
+@Slf4j
 public class ValidationItemControllerV1 {
+
+    public static final int MIN_PRICE = 1_000;
+    public static final int MAX_PRICE = 1_000_000;
+    public static final int MAX_QUANTITY = 9_999;
+    public static final int MIN_TOTAL_PRICE = 10_000;
 
     private final ItemRepository itemRepository;
 
@@ -38,11 +48,43 @@ public class ValidationItemControllerV1 {
     }
 
     @PostMapping("/add")
-    public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes) {
+    public String addItem(@ModelAttribute Item item, RedirectAttributes redirectAttributes, Model model) {
+        // 검증 오류 결과 보관
+        Map<String, String> errors = new HashMap<>();
+        // 검증 로직
+        if (!StringUtils.hasText(item.getItemName())) {
+            errors.put("itemName", "상품 이름은 필수입니다.");
+        }
+        if (item.getPrice() == null || item.getPrice() < MIN_PRICE || item.getPrice() > MAX_PRICE) {
+            errors.put("price", "가격은 1,000원 ~ 1,000,000원 까지 허용합니다.");
+        }
+        if (item.getQuantity() == null || item.getQuantity() >= MAX_QUANTITY) {
+            errors.put("quantity", "수량은 최대 9,999개 까지 허용합니다.");
+        }
+
+        // 특정 필드가 아닌 복합 룰 검증
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < MIN_TOTAL_PRICE) {
+                errors.put("globalError", "가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재 값 = " + resultPrice);
+            }
+        }
+
+        if (hasError(errors)) {
+            log.error("errors = {}", errors);
+            model.addAttribute("errors", errors);
+            return "validation/v1/addForm";
+        }
+
+        // 성공 로직
         Item savedItem = itemRepository.save(item);
         redirectAttributes.addAttribute("itemId", savedItem.getId());
         redirectAttributes.addAttribute("status", true);
         return "redirect:/validation/v1/items/{itemId}";
+    }
+
+    private static boolean hasError(Map<String, String> errors) {
+        return !errors.isEmpty();
     }
 
     @GetMapping("/{itemId}/edit")
