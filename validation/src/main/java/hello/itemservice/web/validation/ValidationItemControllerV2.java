@@ -6,13 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.validation.ValidationUtils;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -183,9 +179,10 @@ public class ValidationItemControllerV2 {
         log.info("target = {}", bindingResult.getTarget());
 
         // 검증 로직
-        if (!StringUtils.hasText(item.getItemName())) {
+        ValidationUtils.rejectIfEmptyOrWhitespace(bindingResult, "itemName", "required");
+        /*if (!StringUtils.hasText(item.getItemName())) {
             bindingResult.rejectValue("itemName", "required");
-        }
+        }*/
         if (item.getPrice() == null || item.getPrice() < MIN_PRICE || item.getPrice() > MAX_PRICE) {
             log.error("item.getPrice() = {}", item.getPrice());
             bindingResult.rejectValue("price", "range", new Object[]{1000, 10000000}, null);
