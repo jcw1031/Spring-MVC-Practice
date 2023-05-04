@@ -178,6 +178,11 @@ public class ValidationItemControllerV2 {
         log.info("objectName = {}", bindingResult.getObjectName());
         log.info("target = {}", bindingResult.getTarget());
 
+        if (bindingResult.hasErrors()) {
+            log.error("errors = {}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
         // 검증 로직
         ValidationUtils.rejectIfEmptyOrWhitespace(bindingResult, "itemName", "required");
         /*if (!StringUtils.hasText(item.getItemName())) {
