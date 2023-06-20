@@ -7,8 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ValidationUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -19,12 +25,13 @@ import java.util.List;
 @Slf4j
 public class ValidationItemControllerV2 {
 
-    public static final int MIN_PRICE = 1_000;
-    public static final int MAX_PRICE = 1_000_000;
-    public static final int MAX_QUANTITY = 9_999;
-    public static final int MIN_TOTAL_PRICE = 10_000;
-
     private final ItemRepository itemRepository;
+    private final ItemValidator itemValidator;
+
+    @InitBinder
+    public void init(WebDataBinder webDataBinder) {
+        webDataBinder.addValidators(itemValidator);
+    }
 
     @GetMapping
     public String items(Model model) {
@@ -170,7 +177,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }*/
 
-    @PostMapping("/add")
+    /*@PostMapping("/add")
     public String addItemV4(
             @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model
     ) {
@@ -185,9 +192,9 @@ public class ValidationItemControllerV2 {
 
         // 검증 로직
         ValidationUtils.rejectIfEmptyOrWhitespace(bindingResult, "itemName", "required");
-        /*if (!StringUtils.hasText(item.getItemName())) {
+        *//*if (!StringUtils.hasText(item.getItemName())) {
             bindingResult.rejectValue("itemName", "required");
-        }*/
+        }*//*
         if (item.getPrice() == null || item.getPrice() < MIN_PRICE || item.getPrice() > MAX_PRICE) {
             log.error("item.getPrice() = {}", item.getPrice());
             bindingResult.rejectValue("price", "range", new Object[]{1000, 10000000}, null);
@@ -204,6 +211,43 @@ public class ValidationItemControllerV2 {
             }
         }
 
+        if (bindingResult.hasErrors()) {
+            log.error("errors = {}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        // 성공 로직
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }*/
+
+    /*@PostMapping("/add")
+    public String addItemV5(
+            @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model
+    ) {
+        if (itemValidator.supports(item.getClass())) {
+            itemValidator.validate(item, bindingResult);
+        }
+
+        if (bindingResult.hasErrors()) {
+            log.error("errors = {}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        // 성공 로직
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }*/
+
+    @PostMapping("/add")
+    public String addItemV6(
+            @Validated @ModelAttribute Item item, BindingResult bindingResult,
+            RedirectAttributes redirectAttributes, Model model
+    ) {
         if (bindingResult.hasErrors()) {
             log.error("errors = {}", bindingResult);
             return "validation/v2/addForm";
