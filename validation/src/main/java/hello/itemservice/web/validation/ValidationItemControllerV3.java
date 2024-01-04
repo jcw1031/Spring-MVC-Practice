@@ -23,6 +23,8 @@ import java.util.List;
 @Slf4j
 public class ValidationItemControllerV3 {
 
+    public static final int MIN_TOTAL_PRICE = 10_000;
+
     private final ItemRepository itemRepository;
 
     @GetMapping
@@ -50,6 +52,13 @@ public class ValidationItemControllerV3 {
             @Validated @ModelAttribute Item item, BindingResult bindingResult,
             RedirectAttributes redirectAttributes, Model model
     ) {
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < MIN_TOTAL_PRICE) {
+                bindingResult.reject("totalPriceMin", new Object[]{10000, resultPrice}, null);
+            }
+        }
+
         if (bindingResult.hasErrors()) {
             log.error("errors = {}", bindingResult);
             return "validation/v3/addForm";
