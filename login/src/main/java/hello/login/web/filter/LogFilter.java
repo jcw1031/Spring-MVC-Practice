@@ -21,7 +21,8 @@ public class LogFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+            throws IOException, ServletException {
         log.info("log filter doFilter");
 
         HttpServletRequest request = (HttpServletRequest) servletRequest;
