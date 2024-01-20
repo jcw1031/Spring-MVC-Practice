@@ -17,7 +17,7 @@ import java.io.IOException;
 @Slf4j
 public class LoginCheckFilter implements Filter {
 
-    private static final String[] WHITE_LIST = {"/", "/members/add", "/login", "/logout", "/css/*"};
+    private static final String[] WHITE_LIST = {"/", "/members/add", "/login", "/logout", "/css/*", "/*.ico"};
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
