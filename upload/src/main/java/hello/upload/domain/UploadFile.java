@@ -5,6 +5,11 @@ import lombok.Data;
 @Data
 public class UploadFile {
 
-    private String uploadFileName;
-    private String storeFileName;
+    private String uploadFilename;
+    private String storeFilename;
+
+    public UploadFile(String uploadFilename, String storeFilename) {
+        this.uploadFilename = uploadFilename;
+        this.storeFilename = storeFilename;
+    }
 }
